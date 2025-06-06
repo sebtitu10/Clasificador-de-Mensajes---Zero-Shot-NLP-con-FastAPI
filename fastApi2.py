@@ -1,4 +1,5 @@
 import uvicorn
+from click import prompt
 from fastapi import FastAPI, HTTPException
 from pandas import notna
 from pydantic import BaseModel
@@ -10,7 +11,7 @@ from langchain.prompts import PromptTemplate
 app = FastAPI(
     title= "API de categorizar mensajes"
 )
-models = "roberta-large-mnli"
+models = "roberta-large-mnli"   #"facebook/bart-large-mnli  , este modelo tambien lo hace bien"
 clasificador = pipeline("zero-shot-classification", model=models)
 
 
@@ -28,15 +29,20 @@ def evaluar_categoria(request: mensaje_request):
     if not request.texto.strip():
         raise HTTPException(status_code=400, detail="el mesaje no debe estar vacio")
     else:
-        label_candidates = [ "El mensaje es una solicitud URGENTE",
-        "El mensaje es una solicitud NORMAL",
-        "El mensaje es una solicitud MODERADA"]
+        label_candidates = ["URGENTE", "MODERADO", "NORMAL"]
 
         #Integramos un prompt con el mensaje
-        prompt = PromptTemplate.from_template(
-            f"Clasifica el siguiente mensaje como URGENTE, MODERADO o NORMAL:\n\nMensaje: {request.texto}")
 
-        resultado = clasificador(prompt, label_candidates)
+        plantilla = PromptTemplate.from_template(
+            "Clasifica el siguiente mensaje : {mensaje}")
+
+
+        prompt = plantilla.format(mensaje=request.texto)
+        print(prompt)
+        resultado = clasificador(
+            prompt,
+            label_candidates,
+        )
         etiqueta_mas_probable = resultado["labels"][0]
 
         print(resultado)
@@ -47,4 +53,4 @@ def evaluar_categoria(request: mensaje_request):
 
 
 if __name__=="__main__":
-    uvicorn.run("fastApi:app",port=8080,reload=True)
+    uvicorn.run("fastApi2:app",port=8081,reload=True)

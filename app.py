@@ -4,7 +4,7 @@ import requests
 
 #configuramos el URL base de la API de fastAPI
 
-API_URL = "http://localhost:8080"
+API_URL = "http://localhost:8081"
 
 # Titulo de la aplicacion
 
